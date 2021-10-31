@@ -5,6 +5,3 @@ class Symbol:
         self.scope = scope
         self.row = row
         self.col = col
-    
-    def execute(self, main, tabla, scope):
-        return self.val

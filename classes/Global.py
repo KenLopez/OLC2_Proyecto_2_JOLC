@@ -10,7 +10,20 @@ class Global:
         self.symbols = SymbolTable()
         self.errors = []
         self.ast = None
-        self.output = ""
+        self.output = f'''package main;
+        
+import (
+    "fmt"
+)
+        
+var P, H float64;
+var stack[100000000] float64;
+var heap[100000000] float64;
+
+func main(){{
+    fmt.Println("Hello World!");   
+}}
+'''
         self.graph = ""
         self.input = ""
 

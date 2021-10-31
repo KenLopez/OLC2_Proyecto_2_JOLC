@@ -6,14 +6,3 @@ class Variable:
         self.id = id
         self.row = row
         self.col = col
-    
-    def execute(self, main, tabla, scope):
-        v = tabla.getSymbol(self.id)
-        if(v == TYPE.ERROR):
-            return TYPE.ERROR
-        elif(v.type == TYPE.FUNCTION):
-            return TYPE.ERROR
-        val = v.execute(main, tabla, scope)
-        if(val==TYPE.ERROR or val==None): 
-            return TYPE.ERROR
-        return val

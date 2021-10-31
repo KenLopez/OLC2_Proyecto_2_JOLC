@@ -139,14 +139,30 @@ def t_newline(t):
 def t_error(t):
     print("Caracter no reconocido '%s'" % t.value[0])
 
+from classes.Aritmetica import Aritmetica
+from classes.Global import Global
+from classes.Logica import Logica
+from classes.Print import Print
+from classes.Relacional import Relacional
+from classes.Tipo import TYPE
+from classes.Variable import Variable
+from classes.Value import Value
+from classes.Nativa import Nativa
+from classes.Call import Call
 import ply.lex as lex
+
 lexer = lex.lex()
 
 def p_init(t):
     'init           : globales'
+    t[0] = Global()
+    t[0].instrucciones = t[1]
 
 def p_globales_mult_1(t):
     'globales       : globales instruccion'
+    t[1].append(t[2])
+    t[0] = t[1]
+
 
 def p_globales_mult_2(t):
     '''globales     : globales funcion END sync
@@ -161,6 +177,7 @@ def p_globales_1(t):
 
 def p_globales_3(t):
     'globales       : instruccion'
+    t[0] = [t[1]]
 
 def p_struct(t):
     'struct         : STRUCT ID attributes'
@@ -182,9 +199,12 @@ def p_attribute_type(t):
 
 def p_instrucciones_lista(t):
     'instrucciones  : instrucciones instruccion'
+    t[1].append(t[2])
+    t[0] = t[1]
 
 def p_instrucciones_instruccion(t):
     'instrucciones  :   instruccion'
+    t[0] = [t[1]]
 
 def p_instruccion_while(t):
     'instruccion    : WHILE expl instrucciones END sync'
@@ -201,6 +221,8 @@ def p_instruccion(t):
     '''instruccion  : PRINT args sync 
                     | PRINTLN args sync
     '''
+    if t[1]=='print': t[0] = Print(t[2], TYPE.PRINT, t.lexer.lineno, t.lexer.lexpos)
+    elif t[1]=='println': t[0] = Print(t[2], TYPE.PRINTLN, t.lexer.lineno, t.lexer.lexpos)
 
 def p_instruccion_asignacion(t):
     'instruccion    : asignacion sync'
@@ -293,9 +315,12 @@ def p_expl(t):
     '''expl         : expl OR expl
                     | expl AND expl
     '''
+    if t[2]=='||': t[0] = Relacional(t[1], t[3], TYPE.OR, t.lexer.lineno, t.lexer.lexpos)
+    elif t[2]=='&&': t[0] = Relacional(t[1], t[3], TYPE.AND, t.lexer.lineno, t.lexer.lexpos)
 
 def p_expl_expr(t):
     'expl           : expr'
+    t[0] = t[1]
 
 def p_expr(t):
     '''expr         : expr EQUALS expr
@@ -306,9 +331,16 @@ def p_expr(t):
                     | expr MENORIGUAL expr
     
     '''
+    if t[2]=='==': t[0] = Relacional(t[1], t[3], TYPE.EQUAL, t.lexer.lineno, t.lexer.lexpos)
+    elif t[2]=='!=': t[0] = Relacional(t[1], t[3], TYPE.DIFFERENT, t.lexer.lineno, t.lexer.lexpos)
+    elif t[2]=='<': t[0] = Relacional(t[1], t[3], TYPE.LOWER, t.lexer.lineno, t.lexer.lexpos)
+    elif t[2]=='>': t[0] = Relacional(t[1], t[3], TYPE.GREATER, t.lexer.lineno, t.lexer.lexpos)
+    elif t[2]=='<=': t[0] = Relacional(t[1], t[3], TYPE.LOWEREQUAL, t.lexer.lineno, t.lexer.lexpos)
+    elif t[2]=='>=': t[0] = Relacional(t[1], t[3], TYPE.GREATEREQUAL, t.lexer.lineno, t.lexer.lexpos)
 
 def p_expr_expm(t):
     'expr           : expm'
+    t[0] = t[1]
 
 def p_expm(t):
     '''expm         : expm MAS expm
@@ -318,42 +350,61 @@ def p_expm(t):
                     | expm MODULO expm
                     | expm ELEVADO expm
     '''
+    if t[2]=='+': t[0] = Aritmetica(t[1], t[3], TYPE.ADDITION, t.lexer.lineno, t.lexer.lexpos)
+    elif t[2]=='-': t[0] = Aritmetica(t[1], t[3], TYPE.SUBSTRACTION, t.lexer.lineno, t.lexer.lexpos)
+    elif t[2]=='*': t[0] = Aritmetica(t[1], t[3], TYPE.MULTIPLICATION, t.lexer.lineno, t.lexer.lexpos)
+    elif t[2]=='/': t[0] = Aritmetica(t[1], t[3], TYPE.DIVISION, t.lexer.lineno, t.lexer.lexpos)
+    elif t[2]=='%': t[0] = Aritmetica(t[1], t[3], TYPE.MODULUS, t.lexer.lineno, t.lexer.lexpos)
+    elif t[2]=='^': t[0] = Aritmetica(t[1], t[3], TYPE.POWER, t.lexer.lineno, t.lexer.lexpos)
 
 def p_expm_val(t):
     'expm           : expval'
+    t[0] = t[1]
 
 def p_expval_not(t):
     'expval         : NOT expval'
+    t[0] = Logica(t[2], None, TYPE.NOT, t.lexer.lineno, t.lexer.lexpos)
 
 def p_expval_neg(t):
     'expval         : MENOS expval'
+    t[0] = Aritmetica(t[2], None, TYPE.NEGATIVE, t.lexer.lineno, t.lexer.lexpos)
+
 
 def p_expval_string(t):
     'expval         : CADENA'
+    t[0] = Value(t[1], TYPE.STRING, t.lexer.lineno, t.lexer.lexpos)
 
 def p_expval_char(t):
     'expval         : CARACTER'
+    t[0] = Value(t[1], TYPE.CHAR, t.lexer.lineno, t.lexer.lexpos)
 
 def p_expval_bool(t):
     'expval         : booleano'
+    t[0] = t[1]
 
 def p_expval_int(t):
     'expval         : ENTERO'
+    t[0] = Value(t[1], TYPE.INT64, t.lexer.lineno, t.lexer.lexpos)
 
 def p_expval_float(t):
     'expval         : DECIMAL'
+    t[0] = Value(t[1], TYPE.FLOAT64, t.lexer.lineno, t.lexer.lexpos)
 
 def p_expval_nativa(t):
     'expval         : nativa'
+    t[0] = t[1]
 
 def p_expval_id(t):
     'expval         : ID'
+    t[0] = Variable(t[1], t.lexer.lineno, t.lexer.lexpos)
 
 def p_expval_call(t):
     'expval         : call'
+    t[0] = t[1]
 
 def p_expval_paren(t):
     'expval         : PAREA expl PAREC'
+    t[0] = t[2]
 
 def p_nativa(t):
     '''nativa       : PARSE args
@@ -362,27 +413,35 @@ def p_nativa(t):
                     | FSTRING args
                     | LENGTH args
     '''
+    if t[0]=='parse': t[0] = Nativa(t[2], TYPE.PARSE, t.lexer.lineno, t.lexer.lexpos)
+    elif t[0]=='trunc': t[0] = Nativa(t[2], TYPE.TRUNCATE, t.lexer.lineno, t.lexer.lexpos)
+    elif t[0]=='float': t[0] = Nativa(t[2], TYPE.FFLOAT, t.lexer.lineno, t.lexer.lexpos)
+    elif t[0]=='string': t[0] = Nativa(t[2], TYPE.FSTRING, t.lexer.lineno, t.lexer.lexpos)
+    elif t[0]=='length': t[0] = Nativa(t[2], TYPE.LENGTH, t.lexer.lineno, t.lexer.lexpos)
 
 def p_expval_array(t):
     'expval         : CORCHEA list_values CORCHEC'
+    t[0] = t[2]
 
 def p_expval_empty_array(t):
     'expval         : CORCHEA CORCHEC'
+    t[0] = Value([], TYPE.LIST, t.lexer.lineno, t.lexer.lexpos)
 
 def p_expval_array_access(t):
     'expval         : ID array_access'
 
 def p_expval_nothing(t):
     'expval         : NOTHING'
+    t[0] = Value(None, TYPE.NOTHING, t.lexer.lineno, t.lexer.lexpos)
 
 def p_expval_struct_access(t):
     'expval         : ID PT struct_access'
 
 def p_array_accesses(t):
-    'array_access   : array_access CORCHEA expm CORCHEC'
+    'array_access   : array_access CORCHEA expl CORCHEC'
 
 def p_array_access(t):
-    'array_access   : CORCHEA expm CORCHEC'
+    'array_access   : CORCHEA expl CORCHEC'
 
 def p_struct_accesses(t):
     'struct_access   : struct_access PT ID'
@@ -392,23 +451,30 @@ def p_struct_access(t):
 
 def p_list_values(t):
     'list_values    : list_values COMA expl'
+    t[1].append(t[3])
+    t[0] = t[1]
 
 def p_list_value(t):
     'list_values    : expl'
+    t[0] = [t[1]]
 
 def p_args(t):
     'args           : PAREA list_values PAREC'
+    t[0] = t[2]
 
 def p_args_none(t):
     'args           : PAREA PAREC'
+    t[0] = []
 
 # Valores Booleanos
 
 def p_booleano_true(t):
     'booleano       : TRUE'
+    t[0] = Value(True, TYPE.BOOL, t.lexer.lineno, t.lexer.lexpos)
 
 def p_booleano_false(t):
     'booleano       : FALSE'
+    t[0] = Value(False, TYPE.BOOL, t.lexer.lineno, t.lexer.lexpos)
 
 # Tipado
 
@@ -421,6 +487,13 @@ def p_typing(t):
                     | ID
                     | NOTHING
     '''
+    if t[1]=='Int64': t[0] = Value(TYPE.INT64, TYPE.TYPE, t.lexer.lineno, t.lexer.lexpos)
+    elif t[1]=='Float64': t[0] = Value(TYPE.FLOAT64, TYPE.TYPE, t.lexer.lineno, t.lexer.lexpos)
+    elif t[1]=='String': t[0] = Value(TYPE.STRING, TYPE.TYPE, t.lexer.lineno, t.lexer.lexpos)
+    elif t[1]=='Bool': t[0] = Value(TYPE.BOOL, TYPE.TYPE, t.lexer.lineno, t.lexer.lexpos)
+    elif t[1]=='Char': t[0] = Value(TYPE.CHAR, TYPE.TYPE, t.lexer.lineno, t.lexer.lexpos)
+    elif t[1]=='Nothing': t[0] = Value(TYPE.STRING, TYPE.TYPE, t.lexer.lineno, t.lexer.lexpos)
+    else: t[0] = Value(t[1], TYPE.TYPE, t.lexer.lineno, t.lexer.lexpos)
 
 def p_sync(t):
     'sync           : PTCOMA'

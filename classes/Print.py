@@ -6,5 +6,6 @@ class Print:
         self.type = type
         self.row = row
         self.col = col
-        if(val == []):
-            self.val.append(Value('', TYPE.TYPESTRING, row, col))
+    
+    def getType(self):
+        return self.type
