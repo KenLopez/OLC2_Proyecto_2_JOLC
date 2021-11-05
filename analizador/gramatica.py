@@ -149,53 +149,89 @@ from classes.Variable import Variable
 from classes.Value import Value
 from classes.Nativa import Nativa
 from classes.Call import Call
+from classes.ArrayAccess import ArrayAccess
+from classes.While import While
+from classes.StructAccess import StructAccess
+from classes.Param import Param
+from classes.Funcion import Funcion
+from classes.Declaracion import Declaracion
+from classes.Asignacion import Asignacion
+from classes.If import If
+from classes.Control import Control
+from classes.For import For
+from classes.Struct import Struct
 import ply.lex as lex
 
 lexer = lex.lex()
+
+precedence = (
+    ('right', 'IGUAL'),
+    ('left', 'OR'),
+    ('left', 'AND'),
+    ('right', 'NOT'),
+    ('left', 'EQUALS', 'DIFERENTE'),
+    ('left', 'MAYOR', 'MENOR', 'MENORIGUAL', 'MAYORIGUAL'),
+    ('left', 'MAS', 'MENOS'),
+    ('left', 'POR', 'DIVIDIDO', 'MODULO'),
+    ('right', 'ELEVADO'),
+)
 
 def p_init(t):
     'init           : globales'
     t[0] = Global()
     t[0].instrucciones = t[1]
 
-def p_globales_mult_1(t):
-    'globales       : globales instruccion'
+def p_globales_list(t):
+    'globales       : globales global'
     t[1].append(t[2])
     t[0] = t[1]
 
+def p_globales(t):
+    'globales       : global'
+    t[0] = [t[1]]
 
-def p_globales_mult_2(t):
-    '''globales     : globales funcion END sync
-                    | globales struct END sync
-    '''
-
-def p_globales_1(t):
-    '''globales     : funcion END sync
+def p_global_func_struct(t):
+    '''global       : funcion END sync
                     | struct END sync
     '''
+    t[0] = t[1]
 
+def p_global_instruccion(t):
+    'global       : instruccion'
+    t[0] = t[1]
 
-def p_globales_3(t):
-    'globales       : instruccion'
-    t[0] = [t[1]]
+# Definición de struct
 
 def p_struct(t):
     'struct         : STRUCT ID attributes'
+    t[0] = Declaracion(t[2], Struct(t[3], False, TYPE.STRUCTDEF), t.lexer.lineno, t.lexer.lexpos)
 
 def p_struct_mutable(t):
     'struct         : MUTABLE STRUCT ID attributes'
+    t[0] = Declaracion(t[3], Struct(t[4], True, TYPE.STRUCTDEF), t.lexer.lineno, t.lexer.lexpos)
+
+# Atributos de struct
 
 def p_attributes(t):
     'attributes     : attributes attribute'
+    t[1].append(t[2])
+    t[0] = t[1]
 
 def p_attributes_attribute(t):
     'attributes     : attribute'
+    t[0] = [t[1]]
+
+# Definición de atributo
 
 def p_attribute(t):
     'attribute      : ID sync'
+    t[0] = Param(t[1], Value(TYPE.ANY, TYPE.TYPE, t.lexer.lineno, t.lexer.lexpos))
 
 def p_attribute_type(t):
     'attribute      : ID DDOSPT typing sync'
+    t[0] = Param(t[1], t[3])
+
+# Lista de instrucciones locales
 
 def p_instrucciones_lista(t):
     'instrucciones  : instrucciones instruccion'
@@ -206,16 +242,29 @@ def p_instrucciones_instruccion(t):
     'instrucciones  :   instruccion'
     t[0] = [t[1]]
 
+# Instrucción while
+
 def p_instruccion_while(t):
     'instruccion    : WHILE expl instrucciones END sync'
+    t[0] = While(t[2], t[3], t.lexer.lineno, t.lexer.lexpos)
+
+# Instrucción for
 
 def p_instruccion_for(t):
     'instruccion    : FOR ID IN range instrucciones END sync'
+    t[0] = For(t[2], t[4], t[5], t.lexer.lineno, t.lexer.lexpos)
+
+# Tipos de range
+
 def p_range_expl(t):
     'range          : expl'
+    t[0] = t[1]
 
 def p_range_range(t):
     'range          : expl DOSPT expl'
+    t[0] = Value([t[1], t[3]], TYPE.RANGE, t.lexer.lineno, t.lexer.lexpos)
+
+# Instrucciones locales
 
 def p_instruccion(t):
     '''instruccion  : PRINT args sync 
@@ -226,90 +275,172 @@ def p_instruccion(t):
 
 def p_instruccion_asignacion(t):
     'instruccion    : asignacion sync'
+    t[0] = t[1]
 
 def p_instruccion_if(t):
     'instruccion    : if END sync'
+    t[0] = t[1]
 
 def p_instruccion_control(t):
     '''instruccion  : BREAK sync
                     | CONTINUE sync
                     | RETURN sync
     '''
+    if t[1] == 'break': t[0] = Control(None, TYPE.BREAK, t.lexer.lineno, t.lexer.lexpos)
+    elif t[1] == 'return': t[0] = Control(Value(None, TYPE.NOTHING, t.lexer.lineno, t.lexer.lexpos), TYPE.RETURN, t.lexer.lineno, t.lexer.lexpos)
+    elif t[1] == 'continue': t[0] = Control(None, TYPE.CONTINUE, t.lexer.lineno, t.lexer.lexpos)
 
 def p_instruccion_return_value(t):
     'instruccion    : RETURN expl sync'
+    t[0] = Control(t[1], TYPE.RETURN, t.lexer.lineno, t.lexer.lexpos)
 
 def p_instruccion_call(t):
     'instruccion    : call sync'
+    t[0] = t[1]
+
+# Sentencia if
 
 def p_if_solo(t):
     'if             : IF expl instrucciones'
+    t[0] = If([t[2]], [t[3]], [], t.lexer.lineno, t.lexer.lexpos)
+
 
 def p_if_else(t):
     'if             : IF expl instrucciones ELSE instrucciones'
+    t[0] = If([t[2]], [t[3]], t[5], t.lexer.lineno, t.lexer.lexpos)
 
 def p_if_elseif(t):
     'if             : IF expl instrucciones elseif'
+    con = [t[2]]
+    con.extend(t[4][0])
+    ins = [t[3]]
+    ins.extend(t[4][1])
+    t[0] = If(con, ins, [], t.lexer.lineno, t.lexer.lexpos)
 
 def p_if_full(t):
     'if             : IF expl instrucciones elseif ELSE instrucciones'
+    con = [t[2]]
+    con.extend(t[4][0])
+    ins = [t[3]]
+    ins.extend(t[4][1])
+    t[0] = If(con, ins, t[6], t.lexer.lineno, t.lexer.lexpos)
 
 def p_if_elseifs(t):
     'elseif         : elseif ELSEIF expl instrucciones'
+    t[1][0].append(t[3])
+    t[1][1].append(t[4])
+    t[0] = [t[1][0], t[1][1]]
 
 def p_elseif(t):
     'elseif         : ELSEIF expl instrucciones'
+    t[0] = [[t[2]], [t[3]]]
+
+# Asinaciones y definición de variables
 
 def p_asignacion_any(t):
     'asignacion     : variable IGUAL expl'
+    t[0] = Asignacion(
+        t[1][0], 
+        t[3], 
+        Value(TYPE.ANY, TYPE.TYPE, t.lexer.lineno, t.lexer.lexpos), 
+        t[1][1], 
+        t.lexer.lineno, 
+        t.lexer.lexpos
+    )
 
 def p_asignacion_tipo(t):
     'asignacion     : variable IGUAL expl DDOSPT typing'
-
+    t[0] = Asignacion(
+        t[1][0], 
+        t[3], 
+        t[5], 
+        t[1][1], 
+        t.lexer.lineno, 
+        t.lexer.lexpos
+    )
 def p_declaracion_none(t):
     'asignacion     : variable'
+    t[0] = Asignacion(
+        t[1][0], 
+        Value(None, TYPE.NOTHING, t.lexer.lineno, t.lexer.lexpos), 
+        Value(TYPE.ANY, TYPE.TYPE, t.lexer.lineno, t.lexer.lexpos), 
+        t[1][1], 
+        t.lexer.lineno, 
+        t.lexer.lexpos
+    )
+
+# Definición de función
 
 def p_funcion(t):
     'funcion        : FUNCTION ID params instrucciones'
+    t[0] = Declaracion(t[2], Funcion(t[3], t[4]), t.lexer.lineno, t.lexer.lexpos)
+
+# Parámetros
 
 def p_params(t):
     'params         : PAREA list_params PAREC'
+    t[0] = t[2]
 
 def p_params_none(t):
     'params         : PAREA PAREC'
+    t[0] = []
+
+# Llamada a método
 
 def p_call(t):
     'call           : ID args'
+    Call(t[1], t[2], t.lexer.lineno, t.lexer.lexpos)
+
+# Lista de parámetros
 
 def p_list_params(t):
     'list_params    : list_params COMA param'
+    t[1].append(t[3])
+    t[0] = t[1]
 
 def p_list_param(t):
     'list_params    : param'
+    t[0] = [t[1]]
+
+# Definición de parámetros
 
 def p_param(t):
     'param          : ID'
+    t[0] = Param(t[1], Value(TYPE.ANY, TYPE.TYPE, t.lexer.lineno, t.lexer.lexpos))
 
 def p_param_type(t):
     'param          : ID DDOSPT typing'
+    t[0] = Param(t[1], t[3])
+
+# Formas de definir una variable
 
 def p_variable_id(t):
     'variable       : id'
-
-def p_variable_struct(t):
-    'variable       : ID PT struct_access'
+    t[0] = [Variable(t[1], t.lexer.lineno, t.lexer.lexpos), TYPE.NOTHING]
 
 def p_variable_local(t):
-    'variable       : LOCAL ID'
+    'variable       : LOCAL id'
+    t[0] = [Variable(t[2], t.lexer.lineno, t.lexer.lexpos), TYPE.LOCAL]
 
 def p_variable_global(t):
-    'variable       : GLOBAL ID'
+    'variable       : GLOBAL id'
+    t[0] = [Variable(t[2], t.lexer.lineno, t.lexer.lexpos), TYPE.GLOBAL]
+
+# Identificadores de asignación
 
 def p_id_id(t):
     'id         : ID'
+    t[0] = t[1]
 
 def p_id_array_access(t):
-    'id         : ID array_access'
+    'id         : array_value'
+    t[0] = t[1]
+
+def p_id_struct_access(t):
+    'id         : struct_value'
+    t[0] = t[1]
+
+# Expresiones lógivas
 
 def p_expl(t):
     '''expl         : expl OR expl
@@ -321,6 +452,8 @@ def p_expl(t):
 def p_expl_expr(t):
     'expl           : expr'
     t[0] = t[1]
+
+# Expresiones relacionales
 
 def p_expr(t):
     '''expr         : expr EQUALS expr
@@ -342,6 +475,8 @@ def p_expr_expm(t):
     'expr           : expm'
     t[0] = t[1]
 
+# Expresiones matemáticas
+
 def p_expm(t):
     '''expm         : expm MAS expm
                     | expm MENOS expm
@@ -360,6 +495,8 @@ def p_expm(t):
 def p_expm_val(t):
     'expm           : expval'
     t[0] = t[1]
+
+# Expresiones de valores
 
 def p_expval_not(t):
     'expval         : NOT expval'
@@ -406,6 +543,28 @@ def p_expval_paren(t):
     'expval         : PAREA expl PAREC'
     t[0] = t[2]
 
+def p_expval_array(t):
+    'expval         : CORCHEA list_values CORCHEC'
+    t[0] = t[2]
+
+def p_expval_empty_array(t):
+    'expval         : CORCHEA CORCHEC'
+    t[0] = Value([], TYPE.LIST, t.lexer.lineno, t.lexer.lexpos)
+
+def p_expval_array_access(t):
+    'expval         : array_value'
+    t[0] = t[1]
+
+def p_expval_struct_access(t):
+    'expval         : struct_value'
+    t[0] = t[1]
+
+def p_expval_type(t):
+    'expval         : typing'
+    t[0] = t[1]
+
+# Nativas
+
 def p_nativa(t):
     '''nativa       : PARSE args
                     | TRUNC args
@@ -419,35 +578,37 @@ def p_nativa(t):
     elif t[0]=='string': t[0] = Nativa(t[2], TYPE.FSTRING, t.lexer.lineno, t.lexer.lexpos)
     elif t[0]=='length': t[0] = Nativa(t[2], TYPE.LENGTH, t.lexer.lineno, t.lexer.lexpos)
 
-def p_expval_array(t):
-    'expval         : CORCHEA list_values CORCHEC'
-    t[0] = t[2]
+# Acceso a array
 
-def p_expval_empty_array(t):
-    'expval         : CORCHEA CORCHEC'
-    t[0] = Value([], TYPE.LIST, t.lexer.lineno, t.lexer.lexpos)
-
-def p_expval_array_access(t):
-    'expval         : ID array_access'
-
-def p_expval_nothing(t):
-    'expval         : NOTHING'
-    t[0] = Value(None, TYPE.NOTHING, t.lexer.lineno, t.lexer.lexpos)
-
-def p_expval_struct_access(t):
-    'expval         : ID PT struct_access'
+def p_array(t):
+    'array_value    : ID array_access'
+    t[0] = ArrayAccess(t[1], t[2], t.lexer.lineno, t.lexer.lexpos)
 
 def p_array_accesses(t):
     'array_access   : array_access CORCHEA expl CORCHEC'
+    t[1].append(t[3])
+    t[0] = t[1]
 
 def p_array_access(t):
     'array_access   : CORCHEA expl CORCHEC'
+    t[0] = [t[2]]
+
+# Acceso a struct
+
+def p_struct_value(t):
+    'struct_value   : ID PT struct_access'
+    t[0] = StructAccess(t[1], t[3], t.lexer.lineno, t.lexer.lexpos)
 
 def p_struct_accesses(t):
     'struct_access   : struct_access PT ID'
+    t[1].append(t[3])
+    t[0] = t[1]
 
 def p_struct_access(t):
     'struct_access   : ID'
+    t[0] = [t[1]]
+
+# Lista de valores
 
 def p_list_values(t):
     'list_values    : list_values COMA expl'
@@ -457,6 +618,8 @@ def p_list_values(t):
 def p_list_value(t):
     'list_values    : expl'
     t[0] = [t[1]]
+
+# Valores de parámetros
 
 def p_args(t):
     'args           : PAREA list_values PAREC'

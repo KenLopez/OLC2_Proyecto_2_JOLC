@@ -1,5 +1,7 @@
 import base64
 from classes.Declaracion import Declaracion
+from classes.FuncionC3D import FuncionC3D
+from classes.InstruccionC3D import InstruccionC3D
 from classes.SymbolTable import SymbolTable
 from classes.Tipo import TYPE
 import graphviz
@@ -10,6 +12,11 @@ class Global:
         self.symbols = SymbolTable()
         self.errors = []
         self.ast = None
+        self.label = 0
+        self.temp = 0
+        self.imports = []
+        self.functions = {'main': FuncionC3D('main')}
+        self.input = ""
         self.output = f'''package main;
         
 import (
@@ -24,35 +31,34 @@ func main(){{
     fmt.Println("Hello World!");   
 }}
 '''
-        self.graph = ""
-        self.input = ""
 
-    def newPrint(self, mensaje):
-        self.output += mensaje
+    def getLabel(self):
+        newLabel = f'L{self.label}'
+        self.label = self.label + 1
+        return newLabel
     
-    def execute(self):
-        scope = 'GLOBAL'
-        for j in self.instrucciones:
-            if(isinstance(j, Declaracion)):
-                j.execute(self, self.symbols, scope)
-        for i in self.instrucciones:
-            if(isinstance(i, Declaracion)):
-                continue
-            i.execute(self, self.symbols, scope)
-        if((len(self.output)>0) and (self.output[-1]=='\n')):
-            self.output = self.output[0:-1]
-        if len(self.errors) == 0:
-            self.graphTree()
+    def getTemp(self):
+        newTemp = f'T{self.temp}'
+        self.temp = self.temp + 1
+        return newTemp
     
-    def graphTree(self):
-        dot = graphviz.Graph(comment='ast')
-        dot.node('nodo'+str(id(self.ast)), self.ast.tag)
-        self.ast.graficar(dot)
-        self.graph = dot.source
+    def translate(self):
+        for instruccion in self.instrucciones:
+            res = instruccion.translate(self)
     
-    def getGraph(self):
-        dot = graphviz.Source(self.graph)
-        coded = base64.b64encode(dot.pipe(format='png')).decode('utf-8')
-        return coded
+    def addPrint(self):
+        temps = [self.getTemp(), self.getTemp(), self.getTemp()]
+        labels = [self.getLabel(), self.getLabel()]
+        self.functions["printString"] = FuncionC3D("printString", [
+            InstruccionC3D(temps[0], 'P', 1, TYPE.ADDITION),
+            InstruccionC3D(temps[1], 'stack', temps[0], TYPE.LIST),
+            InstruccionC3D(labels[1], None, None, TYPE.LABEL),
+            InstruccionC3D(temps[2], 'heap', temps[1], TYPE.LIST),
+            InstruccionC3D(labels[0], temps[2], -1, TYPE.EQUAL),
+            InstruccionC3D(None, temps[2], TYPE.CHAR, TYPE.PRINT),
+            InstruccionC3D(temps[1], temps[1], 1, TYPE.ADDITION),
+            InstruccionC3D(labels[1], None, None, TYPE.GOTO),
+            InstruccionC3D(labels[0], None, None, TYPE.LABEL)
+        ])
 
         

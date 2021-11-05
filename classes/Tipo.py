@@ -72,3 +72,5 @@ class TYPE(Enum):
     BREAK = 69
     MUTABLE = 70
     NEGATIVE = 71
+    LABEL = 72
+    GOTO = 73

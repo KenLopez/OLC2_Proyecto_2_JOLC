@@ -1,7 +1,7 @@
 class Symbol:
-    def __init__(self, id, val, scope, row, col):
+    def __init__(self, id, type, scope, row, col):
         self.id = id
-        self.val = val
+        self.type = type
         self.scope = scope
         self.row = row
         self.col = col
