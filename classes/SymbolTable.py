@@ -42,3 +42,9 @@ class SymbolTable:
                 return TYPE.ERROR
             return res
         return TYPE.ERROR
+    
+    def getLength(self):
+        l = len(self.symbols)
+        if(self.padre != None):
+           l = l + self.padre.getLength()
+        return l 

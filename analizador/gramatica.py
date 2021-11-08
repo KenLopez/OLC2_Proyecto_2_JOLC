@@ -117,7 +117,7 @@ def t_CADENA(t):
     t.value = t.value[1:-1]
     return t
 
-def t_CHAR(t):
+def t_CARACTER(t):
     r'\'.?\''
     t.value = t.value[1:-1]
     return t
@@ -647,7 +647,6 @@ def p_typing(t):
                     | STRING
                     | BOOL
                     | CHAR
-                    | ID
                     | NOTHING
     '''
     if t[1]=='Int64': t[0] = Value(TYPE.INT64, TYPE.TYPE, t.lexer.lineno, t.lexer.lexpos)
@@ -656,7 +655,10 @@ def p_typing(t):
     elif t[1]=='Bool': t[0] = Value(TYPE.BOOL, TYPE.TYPE, t.lexer.lineno, t.lexer.lexpos)
     elif t[1]=='Char': t[0] = Value(TYPE.CHAR, TYPE.TYPE, t.lexer.lineno, t.lexer.lexpos)
     elif t[1]=='Nothing': t[0] = Value(TYPE.STRING, TYPE.TYPE, t.lexer.lineno, t.lexer.lexpos)
-    else: t[0] = Value(t[1], TYPE.TYPE, t.lexer.lineno, t.lexer.lexpos)
+
+def p_typing_id(t):
+    'typing         : ID'
+    t[0] = Value(t[1], TYPE.TYPE, t.lexer.lineno, t.lexer.lexpos)
 
 def p_sync(t):
     'sync           : PTCOMA'
