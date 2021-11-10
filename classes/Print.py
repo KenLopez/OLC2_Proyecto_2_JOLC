@@ -36,30 +36,32 @@ class Print:
                     InstruccionC3D('P', None, 'P', None, pos, TYPE.SUBSTRACTION),
                 ]
             elif(res.type == TYPE.BOOL):
-                lv = main.getLabel()
-                lf = main.getLabel()
-                ls = main.getLabel()
-                if(res.tmp != 0):
-                    translation.append(InstruccionC3D(lv, None, None, None, None, TYPE.GOTO))
-                    translation.append(InstruccionC3D(lf, None, None, None, None, TYPE.GOTO))
+                if len(res.tmp.ls) == 0:
+                    ls = [main.getLabel()]
                 else:
-                    translation.append(InstruccionC3D(lf, None, None, None, None, TYPE.GOTO))
-                    translation.append(InstruccionC3D(lv, None, None, None, None, TYPE.GOTO))
+                    ls = res.tmp.ls
+                translation += res.c3d
+                for label in res.tmp.lv:
+                    translation.append(InstruccionC3D(label, None, None, None, None, TYPE.LABEL))
                 translation += [
-                    InstruccionC3D(lv, None, None, None, None, TYPE.LABEL),
                     InstruccionC3D(None, None, 116, None, TYPE.CHAR, TYPE.PRINT),
                     InstruccionC3D(None, None, 114, None, TYPE.CHAR, TYPE.PRINT),
                     InstruccionC3D(None, None, 117, None, TYPE.CHAR, TYPE.PRINT),
                     InstruccionC3D(None, None, 101, None, TYPE.CHAR, TYPE.PRINT),
-                    InstruccionC3D(ls, None, None, None, None, TYPE.GOTO),
-                    InstruccionC3D(lf, None, None, None, None, TYPE.LABEL),
+                ]
+                for label in ls:
+                    translation.append(InstruccionC3D(label, None, None, None, None, TYPE.GOTO))
+                for label in res.tmp.lf:
+                    translation.append(InstruccionC3D(label, None, None, None, None, TYPE.LABEL))
+                translation += [
                     InstruccionC3D(None, None, 102, None, TYPE.CHAR, TYPE.PRINT),
                     InstruccionC3D(None, None, 97, None, TYPE.CHAR, TYPE.PRINT),
                     InstruccionC3D(None, None, 108, None, TYPE.CHAR, TYPE.PRINT),
                     InstruccionC3D(None, None, 115, None, TYPE.CHAR, TYPE.PRINT),
                     InstruccionC3D(None, None, 101, None, TYPE.CHAR, TYPE.PRINT),
-                    InstruccionC3D(ls, None, None, None, None, TYPE.LABEL),
                 ]
+                for label in ls:
+                    translation.append(InstruccionC3D(label, None, None, None, None, TYPE.LABEL))
             if(self.type == TYPE.PRINTLN):
                 translation.append(InstruccionC3D(None, None, 10, None, TYPE.CHAR, TYPE.PRINT ))
         return translation

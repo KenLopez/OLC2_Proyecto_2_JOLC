@@ -446,8 +446,8 @@ def p_expl(t):
     '''expl         : expl OR expl
                     | expl AND expl
     '''
-    if t[2]=='||': t[0] = Relacional(t[1], t[3], TYPE.OR, t.lexer.lineno, t.lexer.lexpos)
-    elif t[2]=='&&': t[0] = Relacional(t[1], t[3], TYPE.AND, t.lexer.lineno, t.lexer.lexpos)
+    if t[2]=='||': t[0] = Logica(t[1], t[3], TYPE.OR, t.lexer.lineno, t.lexer.lexpos)
+    elif t[2]=='&&': t[0] = Logica(t[1], t[3], TYPE.AND, t.lexer.lineno, t.lexer.lexpos)
 
 def p_expl_expr(t):
     'expl           : expr'

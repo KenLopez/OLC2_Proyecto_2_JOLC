@@ -1,5 +1,5 @@
 class LogicC3D:
-    def __init__(self, lv, lf, c3d):
+    def __init__(self, lv, lf, ls):
         self.lv = lv
         self.lf = lf
-        self.c3d = c3d
+        self.ls = ls

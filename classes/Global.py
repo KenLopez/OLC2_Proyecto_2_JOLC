@@ -40,12 +40,13 @@ import ('''
             self.output += f'\n    "{i}"'
         self.output += f'''
 );
-
-var '''
-        for var in range(0, self.temp):
-            self.output += f'T{var}'
-            if(var!=self.temp-1): self.output += ', '
-        self.output += f''' float64;
+'''
+        if(self.temp>0):
+            self.output += f'\nvar '
+            for var in range(0, self.temp):
+                self.output += f'T{var}'
+                if(var!=self.temp-1): self.output += ', '
+            self.output += f''' float64;
 var P, H float64;
 var stack[30101999] float64;
 var heap[30101999] float64;
@@ -128,6 +129,50 @@ var heap[30101999] float64;
             InstruccionC3D('H', None, 'H', None, 1, TYPE.ADDITION),
             InstruccionC3D(temps[6], None, 'P', None, 2, TYPE.ADDITION),
             InstruccionC3D('stack', temps[6], temps[0], None, None, TYPE.ASSIGN),
+        ])
+    
+    def addStringLength(self):
+        temps = [self.getTemp(), self.getTemp(), self.getTemp()]
+        labels = [self.getLabel(), self.getLabel()]
+        self.functions['stringLength'] = FuncionC3D('stringLength', [
+            InstruccionC3D(temps[0], None, 'P', None, 0, TYPE.ADDITION),
+            InstruccionC3D(temps[0], None, 'stack', temps[0], None, TYPE.ASSIGN),
+            InstruccionC3D(temps[1], None, 0, None, None, TYPE.ASSIGN),
+            InstruccionC3D(labels[1], None, None, None, None, TYPE.LABEL),
+            InstruccionC3D(temps[2], None, temps[0], None, temps[1], TYPE.ADDITION),
+            InstruccionC3D(temps[2], None, 'heap', temps[2], None, TYPE.ASSIGN),
+            InstruccionC3D(labels[0], None, temps[2], None, -1, TYPE.EQUAL),
+            InstruccionC3D(temps[1], None, temps[1], None, 1, TYPE.ADDITION),
+            InstruccionC3D(labels[1], None, None, None, None, TYPE.GOTO),
+            InstruccionC3D(labels[0], None, None, None, None, TYPE.LABEL),
+            InstruccionC3D(temps[0], None, 'P', None, 1, TYPE.ADDITION),
+            InstruccionC3D('stack', temps[0], temps[1], None, None, TYPE.ASSIGN),
+        ])
+    
+    def addCompareStrings(self):
+        temps = [self.getTemp(), self.getTemp(), self.getTemp(), self.getTemp()]
+        labels = [self.getLabel(), self.getLabel(), self.getLabel(), self.getLabel()]
+        self.functions['compareStrings'] = FuncionC3D('compareStrings', [
+            InstruccionC3D(temps[0], None, 'P', None, 0, TYPE.ADDITION),
+            InstruccionC3D(temps[0], None, 'stack', temps[0], None, TYPE.ASSIGN),
+            InstruccionC3D(temps[1], None, 'P', None, 1, TYPE.ADDITION),
+            InstruccionC3D(temps[1], None, 'stack', temps[1], None, TYPE.ASSIGN),
+            InstruccionC3D(labels[2], None, None, None, None, TYPE.LABEL),
+            InstruccionC3D(temps[2], None, 'heap', temps[0], None, TYPE.ASSIGN),
+            InstruccionC3D(temps[3], None, 'heap', temps[1], None, TYPE.ASSIGN),
+            InstruccionC3D(labels[0], None, temps[2], None, temps[3], TYPE.DIFFERENT),
+            InstruccionC3D(labels[1], None, temps[2], None, -1, TYPE.EQUAL),
+            InstruccionC3D(temps[0], None, temps[0], None, 1, TYPE.ADDITION),
+            InstruccionC3D(temps[1], None, temps[1], None, 1, TYPE.ADDITION),
+            InstruccionC3D(labels[2], None, None, None, None, TYPE.GOTO),
+            InstruccionC3D(labels[0], None, None, None, None, TYPE.LABEL),
+            InstruccionC3D(temps[0], None, 0, None, None, TYPE.ASSIGN),
+            InstruccionC3D(labels[3], None, None, None, None, TYPE.GOTO),
+            InstruccionC3D(labels[1], None, None, None, None, TYPE.LABEL),
+            InstruccionC3D(temps[0], None, 1, None, None, TYPE.ASSIGN),
+            InstruccionC3D(labels[3], None, None, None, None, TYPE.LABEL),
+            InstruccionC3D(temps[1], None, 'P', None, 2, TYPE.ADDITION),
+            InstruccionC3D('stack', temps[1], temps[0], None, None, TYPE.ASSIGN),
         ])
     
     def addNumberPower(self):

@@ -1,3 +1,4 @@
+from classes.LogicC3D import LogicC3D
 from classes.Tipo import TYPE
 from classes.InstruccionC3D import InstruccionC3D
 from classes.ValueC3D import ValueC3D
@@ -16,7 +17,15 @@ class Value:
         elif(self.type == TYPE.CHAR):
             val.tmp = ord(self.val)
         elif(self.type == TYPE.BOOL):
-            val.tmp = int(self.val)
+            lv = main.getLabel()
+            lf = main.getLabel()
+            val.tmp = LogicC3D([lv], [lf], [])
+            gv = InstruccionC3D(lv, None, None, None, None, TYPE.GOTO)
+            gf = InstruccionC3D(lf, None, None, None, None, TYPE.GOTO)
+            if(self.val):
+                val.c3d += [gv, gf]
+            else:
+                val.c3d += [gf, gv]
         elif(self.type == TYPE.STRING):
             val.tmp = main.getTemp()
             val.c3d.append(InstruccionC3D(val.tmp, None, 'H', None, None, TYPE.ASSIGN))
