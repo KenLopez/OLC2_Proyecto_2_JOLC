@@ -21,13 +21,15 @@ class Logica:
                     return TYPE.BOOL
         return TYPE.ERROR
     
-    def translate(self, main, ts):
-        izq = self.expIzq.translate(main, ts)
+    def translate(self, main, ts, scope):
+        izq = self.expIzq.translate(main, ts, scope)
         der = ValueC3D(None, TYPE.NOTHING, [])
         if(self.expDer != None):
-            der  = self.expDer.translate(main, ts)
-        translation = ValueC3D(LogicC3D([], [], []), self.checkTypes(izq, der), [])
+            der  = self.expDer.translate(main, ts, scope)
+        translation = ValueC3D(LogicC3D([], []), self.checkTypes(izq, der), [])
         if(translation.type == TYPE.ERROR): 
+            translation.tmp = 0
+            translation.type = TYPE.INT64
             return translation
         if(self.type == TYPE.AND):
             translation.tmp.lv += der.tmp.lv

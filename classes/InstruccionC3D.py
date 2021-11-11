@@ -50,3 +50,5 @@ class InstruccionC3D:
             return f'if {self.op1} < {self.op2} {{goto {self.asignacion};}}\n'
         if(self.funcion == TYPE.CALL):
             return f'{self.asignacion}();\n'
+        if(self.funcion == TYPE.RETURN):
+            return f'return\n'

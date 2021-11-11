@@ -27,6 +27,8 @@ reservadas = {
     'continue'  :   'CONTINUE',
     'return'    :   'RETURN',
     'mutable'   :   'MUTABLE',
+    'uppercase' :   'UPPERCASE',
+    'lowercase' :   'LOWERCASE',
     'true'      :   'TRUE',
     'false'     :   'FALSE',
 }
@@ -416,7 +418,7 @@ def p_param_type(t):
 
 def p_variable_id(t):
     'variable       : id'
-    t[0] = [Variable(t[1], t.lexer.lineno, t.lexer.lexpos), TYPE.NOTHING]
+    t[0] = [Variable(t[1], t.lexer.lineno, t.lexer.lexpos), TYPE.ANY]
 
 def p_variable_local(t):
     'variable       : LOCAL id'
@@ -545,7 +547,7 @@ def p_expval_paren(t):
 
 def p_expval_array(t):
     'expval         : CORCHEA list_values CORCHEC'
-    t[0] = t[2]
+    t[0] = Value(t[2], TYPE.LIST, t.lexer.lineno, t.lexer.lexpos)
 
 def p_expval_empty_array(t):
     'expval         : CORCHEA CORCHEC'
@@ -571,12 +573,16 @@ def p_nativa(t):
                     | FLOAT args
                     | FSTRING args
                     | LENGTH args
+                    | LOWERCASE args
+                    | UPPERCASE args 
     '''
-    if t[0]=='parse': t[0] = Nativa(t[2], TYPE.PARSE, t.lexer.lineno, t.lexer.lexpos)
-    elif t[0]=='trunc': t[0] = Nativa(t[2], TYPE.TRUNCATE, t.lexer.lineno, t.lexer.lexpos)
-    elif t[0]=='float': t[0] = Nativa(t[2], TYPE.FFLOAT, t.lexer.lineno, t.lexer.lexpos)
-    elif t[0]=='string': t[0] = Nativa(t[2], TYPE.FSTRING, t.lexer.lineno, t.lexer.lexpos)
-    elif t[0]=='length': t[0] = Nativa(t[2], TYPE.LENGTH, t.lexer.lineno, t.lexer.lexpos)
+    if t[1]=='parse': t[0] = Nativa(t[2], TYPE.PARSE, t.lexer.lineno, t.lexer.lexpos)
+    elif t[1]=='trunc': t[0] = Nativa(t[2], TYPE.TRUNCATE, t.lexer.lineno, t.lexer.lexpos)
+    elif t[1]=='float': t[0] = Nativa(t[2], TYPE.FFLOAT, t.lexer.lineno, t.lexer.lexpos)
+    elif t[1]=='string': t[0] = Nativa(t[2], TYPE.FSTRING, t.lexer.lineno, t.lexer.lexpos)
+    elif t[1]=='length': t[0] = Nativa(t[2], TYPE.LENGTH, t.lexer.lineno, t.lexer.lexpos)
+    elif t[1]=='uppercase': t[0] = Nativa(t[2], TYPE.UPPERCASE, t.lexer.lineno, t.lexer.lexpos)
+    elif t[1]=='lowercase': t[0] = Nativa(t[2], TYPE.LOWERCASE, t.lexer.lineno, t.lexer.lexpos)
 
 # Acceso a array
 

@@ -8,7 +8,7 @@ class Print:
         self.row = row
         self.col = col
     
-    def translate(self, main, ts):
+    def translate(self, main, ts, scope):
         translation = []
         for element in main.imports:
             if(element == "fmt"):
@@ -16,7 +16,7 @@ class Print:
         else:
             main.imports.append("fmt")
         for value in self.val:
-            res = value.translate(main, ts)
+            res = value.translate(main, ts, scope)
             if(res.type == TYPE.INT64 or res.type == TYPE.FLOAT64 or res.type == TYPE.CHAR):
                 translation += res.c3d
                 translation.append(InstruccionC3D(None, None, res.tmp, None, res.type, TYPE.PRINT))
@@ -36,10 +36,7 @@ class Print:
                     InstruccionC3D('P', None, 'P', None, pos, TYPE.SUBSTRACTION),
                 ]
             elif(res.type == TYPE.BOOL):
-                if len(res.tmp.ls) == 0:
-                    ls = [main.getLabel()]
-                else:
-                    ls = res.tmp.ls
+                ls = main.getLabel()
                 translation += res.c3d
                 for label in res.tmp.lv:
                     translation.append(InstruccionC3D(label, None, None, None, None, TYPE.LABEL))
@@ -49,8 +46,7 @@ class Print:
                     InstruccionC3D(None, None, 117, None, TYPE.CHAR, TYPE.PRINT),
                     InstruccionC3D(None, None, 101, None, TYPE.CHAR, TYPE.PRINT),
                 ]
-                for label in ls:
-                    translation.append(InstruccionC3D(label, None, None, None, None, TYPE.GOTO))
+                translation.append(InstruccionC3D(ls, None, None, None, None, TYPE.GOTO))
                 for label in res.tmp.lf:
                     translation.append(InstruccionC3D(label, None, None, None, None, TYPE.LABEL))
                 translation += [
@@ -60,10 +56,9 @@ class Print:
                     InstruccionC3D(None, None, 115, None, TYPE.CHAR, TYPE.PRINT),
                     InstruccionC3D(None, None, 101, None, TYPE.CHAR, TYPE.PRINT),
                 ]
-                for label in ls:
-                    translation.append(InstruccionC3D(label, None, None, None, None, TYPE.LABEL))
-            if(self.type == TYPE.PRINTLN):
-                translation.append(InstruccionC3D(None, None, 10, None, TYPE.CHAR, TYPE.PRINT ))
+                translation.append(InstruccionC3D(ls, None, None, None, None, TYPE.LABEL))
+        if(self.type == TYPE.PRINTLN):
+            translation.append(InstruccionC3D(None, None, 10, None, TYPE.CHAR, TYPE.PRINT ))
         return translation
                 
             

@@ -74,3 +74,5 @@ class TYPE(Enum):
     NEGATIVE = 71
     LABEL = 72
     GOTO = 73
+    TRUE = 74
+    FALSE = 75

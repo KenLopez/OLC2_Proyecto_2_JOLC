@@ -57,13 +57,14 @@ class Aritmetica:
                 return TYPE.STRING
         return TYPE.ERROR
     
-    def translate(self, main, ts): 
-        izq = self.expIzq.translate(main, ts)
+    def translate(self, main, ts, scope): 
+        izq = self.expIzq.translate(main, ts, scope)
         der = ValueC3D(None, TYPE.NOTHING, [])
         if(self.expDer != None):
-            der  = self.expDer.translate(main, ts)
+            der  = self.expDer.translate(main, ts, scope)
         translation = ValueC3D(0, self.checkTypes(izq, der), [])
         if(translation.type == TYPE.ERROR): 
+            translation.type = TYPE.INT64
             return translation
         translation.tmp = main.getTemp()
         translation.c3d += izq.c3d

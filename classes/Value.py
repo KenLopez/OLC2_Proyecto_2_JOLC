@@ -10,7 +10,7 @@ class Value:
         self.row = row
         self.col = col
 
-    def translate(self, main, ts):
+    def translate(self, main, ts, scope):
         val = ValueC3D(0, self.type, [])
         if(self.type == TYPE.INT64 or self.type == TYPE.FLOAT64):
             val.tmp = self.val
@@ -19,7 +19,7 @@ class Value:
         elif(self.type == TYPE.BOOL):
             lv = main.getLabel()
             lf = main.getLabel()
-            val.tmp = LogicC3D([lv], [lf], [])
+            val.tmp = LogicC3D([lv], [lf])
             gv = InstruccionC3D(lv, None, None, None, None, TYPE.GOTO)
             gf = InstruccionC3D(lf, None, None, None, None, TYPE.GOTO)
             if(self.val):

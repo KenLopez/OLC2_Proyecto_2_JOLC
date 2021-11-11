@@ -2,7 +2,7 @@ from classes.Value import Value
 from classes.Tipo import TYPE
 
 class SymbolTable:
-    def __init__(self, padre = None):
+    def __init__(self, padre):
         self.padre = padre
         self.symbols = {}
 
@@ -14,34 +14,27 @@ class SymbolTable:
             return TYPE.ERROR
         return Value(None, TYPE.NOTHING, symbol.row, symbol.col)
     
-    def updateSymbol(self, symbol, type=TYPE.NOTHING):
-        s = self.getSymbol(symbol.id, type)
-        if(s != TYPE.ERROR):
-            if(s == None):
-                s = symbol
-            else:
-                if(symbol.val != None):
-                    s.type = symbol.val.type
-                    s.val = symbol.val.val
-                    if(isinstance(s, Value) and isinstance(symbol.val, Value)):
-                        s.typeStruct = symbol.val.typeStruct
-        else:
-            self.symbols[symbol.id] = symbol
-        return Value(None, TYPE.NOTHING, symbol.row, symbol.col)
+    def newSymbol(self, symbol):
+        self.symbols[symbol.id] = symbol
+    
+    def updateSymbol(self, symbol, type):
+        s = self.getSymbol(symbol, type)
+        s.type = symbol.type
 
-    def getSymbol(self, id, type = TYPE.NOTHING):
+    def getSymbol(self, id, type):
         s = self.symbols.get(id)
-        if(s!=None):
-            if((type != TYPE.GLOBAL) or (self.padre == None)):
-                return s.val
+        if(type == TYPE.GLOBAL):
+            if(self.padre == None):
+                return s
+            else:
+                return self.padre.getSymbol(id, type)
+        if(type == TYPE.LOCAL):
+            return s
+        if(s != None):
+            return s
         if(self.padre == None):
-            return TYPE.ERROR
-        if(type != TYPE.LOCAL):
-            res = self.padre.getSymbol(id, type)
-            if(res==TYPE.ERROR):
-                return TYPE.ERROR
-            return res
-        return TYPE.ERROR
+            return s
+        return self.padre.getSymbol(id, type)
     
     def getLength(self):
         l = len(self.symbols)
