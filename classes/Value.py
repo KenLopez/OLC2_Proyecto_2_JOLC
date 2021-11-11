@@ -34,6 +34,14 @@ class Value:
                 val.c3d.append(InstruccionC3D('H', None, 'H', None, 1, TYPE.ADDITION))
             val.c3d.append(InstruccionC3D('heap', 'H', -1, None, None, TYPE.ASSIGN))
             val.c3d.append(InstruccionC3D('H', None, 'H', None, 1, TYPE.ADDITION))
+        elif(self.type == TYPE.RANGE):
+            izq = self.val[0].translate(main, ts, scope)
+            der = self.val[1].translate(main, ts, scope)
+            if(izq.type != TYPE.INT64 or der.type != TYPE.INT64):
+                val.tmp = [0, 0]
+            else:
+                val.tmp = [izq.tmp, der.tmp]
+            val.c3d += izq.c3d + der.c3d
         return val
 
 

@@ -57,7 +57,6 @@ class If:
             b = self.conditions[i].translate(main, ts, nscope)
             if(b.type != TYPE.BOOL):
                 b = self.conditionError(main)
-            ls = main.getLabel()
             translation += b.c3d
             for label in b.tmp.lv:
                 translation.append(InstruccionC3D(label, None, None, None, None, TYPE.LABEL))
@@ -66,6 +65,7 @@ class If:
             for instruction in self.instructions[i]:
                 res = instruction.translate(main, self.ts, nscope)
                 translation += res
+            ls = main.getLabel()
             translation.append(InstruccionC3D(ls, None, None, None, None, TYPE.GOTO))
             labels.append(ls)
             for label in b.tmp.lf:
