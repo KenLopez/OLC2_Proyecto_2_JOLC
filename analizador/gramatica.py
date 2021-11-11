@@ -31,6 +31,7 @@ reservadas = {
     'lowercase' :   'LOWERCASE',
     'true'      :   'TRUE',
     'false'     :   'FALSE',
+    'Vector'    :   'VECTOR',
 }
 
 tokens = [
@@ -64,6 +65,8 @@ tokens = [
     'COMA',
     'DOSPT',
     'PT',
+    'LLAVEA',
+    'LLAVEC',
 ] + list(reservadas.values())
 
 # Tokens
@@ -92,6 +95,8 @@ t_AND           = r'&&'
 t_NOT           = r'!'
 t_COMA          = r','
 t_PT            = r'\.'
+t_LLAVEA        = r'\{'
+t_LLAVEC        = r'\}'
 
 def t_DECIMAL(t):
     r'\d+\.\d+'
@@ -664,7 +669,11 @@ def p_typing(t):
 
 def p_typing_id(t):
     'typing         : ID'
-    t[0] = Value(t[1], TYPE.TYPE, t.lexer.lineno, t.lexer.lexpos)
+    t[0] = Value(t[1], TYPE.TYPESTRUCT, t.lexer.lineno, t.lexer.lexpos)
+
+def p_typing_id(t):
+    'typing         : VECTOR LLAVEA typing LLAVEC'
+    t[0] = Value(t[3], TYPE.TYPELIST, t.lexer.lineno, t.lexer.lexpos)
 
 def p_sync(t):
     'sync           : PTCOMA'

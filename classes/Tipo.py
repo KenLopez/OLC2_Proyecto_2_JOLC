@@ -76,3 +76,6 @@ class TYPE(Enum):
     GOTO = 73
     TRUE = 74
     FALSE = 75
+    TYPELIST = 76
+    TYPESTRUCT = 77
+    CONTROL = 78

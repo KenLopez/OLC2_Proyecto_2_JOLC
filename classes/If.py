@@ -53,6 +53,7 @@ class If:
         nscope = f'{scope}_IF'
         translation = []
         labels = []
+        controls = []
         for i in range(0, len(self.conditions)):
             b = self.conditions[i].translate(main, ts, nscope)
             if(b.type != TYPE.BOOL):
@@ -64,7 +65,11 @@ class If:
             self.getSymbols(nscope, self.instructions[i])
             for instruction in self.instructions[i]:
                 res = instruction.translate(main, self.ts, nscope)
-                translation += res
+                if(isinstance(res, ValueC3D)):
+                    controls += res.tmp
+                    translation += res.c3d
+                else:
+                    translation += res
             ls = main.getLabel()
             translation.append(InstruccionC3D(ls, None, None, None, None, TYPE.GOTO))
             labels.append(ls)
@@ -75,9 +80,15 @@ class If:
             self.getSymbols(nscope, self.elseinstructions)
             for instruction in self.elseinstructions:
                 res = instruction.translate(main, self.ts, nscope)
-                translation += res
+                if(isinstance(res, ValueC3D)):
+                    controls += res.tmp
+                    translation += res.c3d
+                else:
+                    translation += res
         for label in labels:
             translation.append(InstruccionC3D(label, None, None, None, None, TYPE.LABEL))
+        if(len(controls)>0):
+            translation = ValueC3D(controls, TYPE.CONTROL, translation)
         return translation
 
             

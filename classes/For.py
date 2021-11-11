@@ -38,7 +38,9 @@ class For:
         pos = ts.getLength()
         translation = []
         ls = []
+        ll = []
         insc3d = []
+        controls = []
         r = self.range.translate(main, ts, scope)
         t = TYPE.INT64
         if(r.type == TYPE.STRING):
@@ -63,7 +65,18 @@ class For:
         self.getSymbols(nscope)
         for instruction in self.instrucciones:
             res = instruction.translate(main, self.ts, nscope)
-            insc3d += res
+            if(isinstance(res, ValueC3D)):
+                insc3d += res.c3d
+                for control in res.tmp:
+                    if(control.type == TYPE.CONTINUE):
+                        ll.append(control.label)
+                    elif(control.type == TYPE.BREAK):
+                        if(str(scope).__contains__('FOR') or str(scope).__contains__('WHILE')):
+                            controls.append(control)
+                        else:
+                            ls.append(control.label)
+            else:
+                insc3d += res
         if(r.type==TYPE.STRING):
             tmps = [main.getTemp(), main.getTemp(), main.getTemp(), main.getTemp()]
             labels = [main.getLabel(), main.getLabel(), main.getLabel()]
@@ -85,6 +98,8 @@ class For:
                 InstruccionC3D(labels[0], None, None, None, None, TYPE.LABEL),
             ]
             translation += insc3d
+            for label in ll:
+                translation.append(InstruccionC3D(label, None, None, None, None, TYPE.LABEL))
             translation += [
                 InstruccionC3D(inc, None, inc, None, 1, TYPE.ADDITION),
                 InstruccionC3D(labels[2], None, None, None, None, TYPE.GOTO),
@@ -104,13 +119,16 @@ class For:
                 InstruccionC3D(labels[0], None, None, None, None, TYPE.LABEL),
             ]
             translation += insc3d
+            for label in ll:
+                translation.append(InstruccionC3D(label, None, None, None, None, TYPE.LABEL))
             translation += [
                 InstruccionC3D(tmps[0], None, tmps[0], None, 1, TYPE.ADDITION),
                 InstruccionC3D(labels[2], None, None, None, None, TYPE.GOTO),
                 InstruccionC3D(labels[1], None, None, None, None, TYPE.LABEL),
             ]
-        if(len(ls)>0):
-            for label in ls:
-                translation.append(InstruccionC3D(label, None, None, None, None, TYPE.LABEL))
+        for label in ls:
+            translation.append(InstruccionC3D(label, None, None, None, None, TYPE.LABEL))
+        if(len(controls)>0):
+            translation = ValueC3D(controls, TYPE.CONTROL, translation)
         return translation
         
