@@ -6,3 +6,6 @@ class Funcion:
         self.params = params
         self.instructions = instructions
         self.type = type     
+    
+    def translate(self, main, ts, scope):
+        pass

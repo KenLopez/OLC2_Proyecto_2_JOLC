@@ -31,7 +31,7 @@ class Variable:
                 InstruccionC3D(lf, None, None, None, None, TYPE.GOTO),
             ]
             translation.tmp = LogicC3D([lv], [lf])
-        if(translation.type == TYPE.LIST):
+        elif(translation.type == TYPE.LIST):
             translation.tmp = Array(temps[1], s.type, s.ext)
         else:
             translation.tmp = temps[1]

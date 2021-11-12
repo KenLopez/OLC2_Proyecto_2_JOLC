@@ -5,7 +5,7 @@ from classes.InstruccionC3D import InstruccionC3D
 from classes.Symbol import Symbol
 from classes.SymbolTable import SymbolTable
 from classes.Tipo import TYPE
-import graphviz
+from classes.Funcion import Funcion
 
 class Global:
     def __init__(self):
@@ -46,6 +46,13 @@ class Global:
                             None
                         )
                     )
+            elif(isinstance(instruccion, Declaracion)):
+                if(isinstance(instruccion.val, Funcion)):
+                    self.symbols.newSymbol(
+                        Symbol(
+                            0, 
+                        )
+                    )
     
     def translate(self):
         self.getSymbols()
@@ -71,7 +78,6 @@ var P, H float64;
 var stack[30101999] float64;
 var heap[30101999] float64;
 
-/* NATIVES */
 '''
 
         for key in self.functions:

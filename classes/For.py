@@ -49,17 +49,15 @@ class For:
             inc = main.getTemp()
             end = -1
             cmp = TYPE.EQUAL
-        if(r.type == TYPE.RANGE):
+        elif(r.type == TYPE.RANGE):
             t = TYPE.INT64
             e = None
             inc = r.tmp[0]
             end = r.tmp[1]
             cmp = TYPE.GREATER
         elif(r.type == TYPE.LIST):
-            if(main.functions.get('stringLength')==None):
-                main.addStringLength()
-            t = r.tmp.dim.type
-            e = r.tmp.dim.dim
+            t = r.tmp.type
+            e = r.tmp.dim
             inc = 0
             end = -1
             cmp = TYPE.EQUAL

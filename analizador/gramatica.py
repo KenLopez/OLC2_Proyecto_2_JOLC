@@ -385,7 +385,7 @@ def p_funcion(t):
 
 def p_funcion_2(t):
     'funcion        : FUNCTION ID params DDOSPT typing instrucciones'
-    t[0] = Declaracion(t[2], Funcion(t[3], t[5], t[4]), t.lexer.lineno, t.lexer.lexpos) 
+    t[0] = Declaracion(t[2], Funcion(t[3], t[6], t[5]), t.lexer.lineno, t.lexer.lexpos) 
 
 # Parámetros
 

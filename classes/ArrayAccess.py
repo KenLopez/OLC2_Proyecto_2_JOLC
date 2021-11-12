@@ -80,6 +80,7 @@ class ArrayAccess:
         if(s.type != TYPE.LIST):
             return translation
         translation.c3d += s.c3d
+        dima = s.tmp
         dim = s.tmp
         tmp = s.tmp.tmp
         pos = ts.getLength()
@@ -131,11 +132,12 @@ class ArrayAccess:
                 InstruccionC3D(tmps[6], None, 'heap', tmps[5], None, TYPE.ASSIGN)
             ]
             tmp = tmps[6]
+            dima = dim
             dim = dim.dim
             translation.type = dim.type
         translation.c3d.append(InstruccionC3D(translation.tmp, None, tmp, None, None, TYPE.ASSIGN))
         for label in ls:
             translation.c3d.append(InstruccionC3D(label, None, None, None, None, TYPE.LABEL))
         if(translation.type == TYPE.LIST):
-            translation.tmp = Array(translation.tmp, dim.type, dim.dim)
+            translation.tmp = Array(translation.tmp, dima.type, dima.dim)
         return translation

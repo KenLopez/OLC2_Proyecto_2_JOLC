@@ -21,11 +21,12 @@ class Asignacion:
             return self.checkListTypes(arr1.dim, arr2.dim)
     
     def translate(self, main, ts, scope):
+        nscope = f'{scope}_ASSIGN'
         translation = []
         if(isinstance(self.id, ArrayAccess)):
-            s = self.id.getRef(main, ts, scope)
+            s = self.id.getRef(main, ts, nscope)
             translation += s.c3d
-            val = self.val.translate(main, ts, scope)
+            val = self.val.translate(main, ts, nscope)
             translation += val.c3d
             if(val.type == TYPE.BOOL):
                 ls = main.getLabel()
@@ -37,9 +38,9 @@ class Asignacion:
                     translation.append(InstruccionC3D(label, None, None, None, None, TYPE.LABEL))
                 translation.append(InstruccionC3D('heap', s.tmp, 0, None, None, TYPE.ASSIGN))
                 translation.append(InstruccionC3D(ls, None, None, None, None, TYPE.LABEL))
-            if(val.type == TYPE.LIST):
+            elif(val.type == TYPE.LIST):
                 translation.append(InstruccionC3D('heap', s.tmp, val.tmp.tmp, None, None, TYPE.ASSIGN))
-                s.ext = val.tmp
+                s.ext = val.tmp.dim
             else:
                 translation.append(InstruccionC3D('heap', s.tmp, val.tmp, None, None, TYPE.ASSIGN))
             for label in self.id.ls:
@@ -49,7 +50,7 @@ class Asignacion:
             s = ts.getSymbol(self.id.id, self.typeExp)
             if(s == None):
                 s = Symbol(0, None, self.type, None, None, None, None)
-            val = self.val.translate(main, ts, scope)
+            val = self.val.translate(main, ts, nscope)
             if(val.type == TYPE.LIST and self.type.val == TYPE.LIST):
                 check = self.checkListTypes(val.tmp, self.type.type)
                 if(not check):
@@ -70,7 +71,7 @@ class Asignacion:
                     translation.append(InstruccionC3D(label, None, None, None, None, TYPE.LABEL))
                 translation.append(InstruccionC3D('stack', temps[0], 0, None, None, TYPE.ASSIGN))
                 translation.append(InstruccionC3D(ls, None, None, None, None, TYPE.LABEL))
-            if(val.type == TYPE.LIST):
+            elif(val.type == TYPE.LIST):
                 translation.append(InstruccionC3D('stack', temps[0], val.tmp.tmp, None, None, TYPE.ASSIGN))
                 s.ext = val.tmp
             else:
