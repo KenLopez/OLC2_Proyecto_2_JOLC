@@ -34,6 +34,7 @@ class Nativa:
             translation.tmp = tmps[1]
             return translation
         func = ''
+        var = None
         if(self.type == TYPE.LOWERCASE):
             if(len(self.val)!=1):
                 return translation
@@ -42,6 +43,7 @@ class Nativa:
                 return translation
             translation.type = TYPE.STRING
             func = 'lowercase'
+            var = val.tmp
             if(main.functions.get(func)==None):
                 main.addToLower()
         elif(self.type == TYPE.UPPERCASE):
@@ -52,14 +54,19 @@ class Nativa:
                 return translation
             translation.type = TYPE.STRING
             func = 'uppercase'
+            var = val.tmp
             if(main.functions.get(func)==None):
                 main.addToUpper()
         elif(self.type == TYPE.LENGTH):
             if(len(self.val)!=1):
                 return translation
             val = self.val[0].translate(main, ts, scope)
-            if(val.type == TYPE.STRING):
+            if(val.type == TYPE.STRING or val.type == TYPE.LIST):
                 func = 'stringLength'
+                if(val.type == TYPE.STRING):
+                    var = val.tmp
+                else:
+                    var = val.tmp.tmp
             else:
                 return translation
             translation.type = TYPE.INT64
@@ -71,7 +78,7 @@ class Nativa:
         translation.c3d += [
             InstruccionC3D(tmp[0], None, 'P', None, pos, TYPE.ADDITION),
             InstruccionC3D(tmp[1], None, tmp[0], None, 0, TYPE.ADDITION),
-            InstruccionC3D('stack', tmp[1], val.tmp, None, None, TYPE.ASSIGN),
+            InstruccionC3D('stack', tmp[1], var, None, None, TYPE.ASSIGN),
             InstruccionC3D('P', None, 'P', None, pos, TYPE.ADDITION),
             InstruccionC3D(func, None, None, None, None, TYPE.CALL),
             InstruccionC3D(tmp[2], None, 'P', None, 1, TYPE.ADDITION),

@@ -1,3 +1,4 @@
+from classes.Array import Array
 from classes.InstruccionC3D import InstruccionC3D
 from classes.LogicC3D import LogicC3D
 from classes.Tipo import TYPE
@@ -22,9 +23,7 @@ class Variable:
                 InstruccionC3D(temps[0], None, 'P', None, s.pos, TYPE.ADDITION),
                 InstruccionC3D(temps[1], None, 'stack', temps[0], None, TYPE.ASSIGN),
             ]
-        if(translation.type != TYPE.BOOL):
-            translation.tmp = temps[1]
-        else:
+        if(translation.type == TYPE.BOOL):
             lv = main.getLabel()
             lf = main.getLabel()
             translation.c3d += [
@@ -32,6 +31,10 @@ class Variable:
                 InstruccionC3D(lf, None, None, None, None, TYPE.GOTO),
             ]
             translation.tmp = LogicC3D([lv], [lf])
+        if(translation.type == TYPE.LIST):
+            translation.tmp = Array(temps[1], s.type, s.ext)
+        else:
+            translation.tmp = temps[1]
         return translation
             
             

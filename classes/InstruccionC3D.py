@@ -51,4 +51,4 @@ class InstruccionC3D:
         if(self.funcion == TYPE.CALL):
             return f'{self.asignacion}();\n'
         if(self.funcion == TYPE.RETURN):
-            return f'return\n'
+            return f'return;\n'

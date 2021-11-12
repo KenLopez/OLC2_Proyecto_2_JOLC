@@ -1,3 +1,4 @@
+from classes.Array import Array
 from classes.LogicC3D import LogicC3D
 from classes.Tipo import TYPE
 from classes.InstruccionC3D import InstruccionC3D
@@ -42,6 +43,34 @@ class Value:
             else:
                 val.tmp = [izq.tmp, der.tmp]
             val.c3d += izq.c3d + der.c3d
+        elif(self.type == TYPE.LIST):
+            tmps = []
+            types = Array(0, TYPE.NOTHING, None)
+            for value in self.val:
+                res = value.translate(main, ts, scope)
+                val.c3d += res.c3d
+                tmp = 0
+                if(res.type != TYPE.LIST):
+                    if(types.type == TYPE.NOTHING):
+                        types.type = res.type
+                    tmps.append(res.tmp)
+                else:
+                    if(types.type == TYPE.NOTHING):
+                        types.type = res.type
+                        types.dim = res.tmp
+                    tmps.append(res.tmp.tmp)
+            types.tmp = main.getTemp()
+            val.c3d.append(InstruccionC3D(types.tmp, None, 'H', None, None, TYPE.ASSIGN))
+            for tmp in tmps:
+                val.c3d += [
+                    InstruccionC3D('heap', 'H', tmp, None, None, TYPE.ASSIGN),
+                    InstruccionC3D('H', None, 'H', None, 1, TYPE.ADDITION),
+                ]
+            val.c3d += [
+                    InstruccionC3D('heap', 'H', -1, None, None, TYPE.ASSIGN),
+                    InstruccionC3D('H', None, 'H', None, 1, TYPE.ADDITION),
+                ]
+            val.tmp = types
         return val
 
 

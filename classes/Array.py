@@ -1,4 +1,5 @@
 class Array:
-    def __init__(self, tmp, types):
+    def __init__(self, tmp, type, dim):
         self.tmp = tmp
-        self.types = types
+        self.type = type
+        self.dim = dim

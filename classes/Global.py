@@ -17,6 +17,7 @@ class Global:
         self.temp = 0
         self.imports = []
         self.functions = {'main': FuncionC3D('main', [])}
+        self.definitions = {}
         self.input = ""
         self.output = ""
 

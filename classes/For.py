@@ -44,23 +44,34 @@ class For:
         r = self.range.translate(main, ts, scope)
         t = TYPE.INT64
         if(r.type == TYPE.STRING):
-            if(main.functions.get('stringLength')==None):
-                main.addStringLength()
             t = TYPE.STRING
+            e = None
             inc = main.getTemp()
             end = -1
             cmp = TYPE.EQUAL
         if(r.type == TYPE.RANGE):
             t = TYPE.INT64
+            e = None
             inc = r.tmp[0]
             end = r.tmp[1]
             cmp = TYPE.GREATER
         elif(r.type == TYPE.LIST):
-            t = TYPE.LIST
+            if(main.functions.get('stringLength')==None):
+                main.addStringLength()
+            t = r.tmp.dim.type
+            e = r.tmp.dim.dim
+            inc = 0
+            end = -1
+            cmp = TYPE.EQUAL
         else:
-            pass    
+            r = ValueC3D(0, TYPE.RANGE, [])
+            e = None
+            t = TYPE.INT64
+            inc = 0
+            end = -1   
         nts = SymbolTable(ts)
-        nts.newSymbol(Symbol(pos, self.variable, t, nscope, self.row, self.col, None))
+        var = Symbol(pos, self.variable, t, nscope, self.row, self.col, e)
+        nts.newSymbol(var)
         self.ts = SymbolTable(nts)
         self.getSymbols(nscope)
         for instruction in self.instrucciones:
@@ -115,6 +126,29 @@ class For:
                 InstruccionC3D(tmps[1], None, 'P', None, pos, TYPE.ADDITION),
                 InstruccionC3D('stack', tmps[1], tmps[0], None, None, TYPE.ASSIGN),
                 InstruccionC3D(labels[1], None, tmps[0], None, end, cmp),
+                InstruccionC3D(labels[0], None, None, None, None, TYPE.GOTO),
+                InstruccionC3D(labels[0], None, None, None, None, TYPE.LABEL),
+            ]
+            translation += insc3d
+            for label in ll:
+                translation.append(InstruccionC3D(label, None, None, None, None, TYPE.LABEL))
+            translation += [
+                InstruccionC3D(tmps[0], None, tmps[0], None, 1, TYPE.ADDITION),
+                InstruccionC3D(labels[2], None, None, None, None, TYPE.GOTO),
+                InstruccionC3D(labels[1], None, None, None, None, TYPE.LABEL),
+            ]
+        elif(r.type==TYPE.LIST):
+            tmps = [main.getTemp(), main.getTemp(), main.getTemp(), main.getTemp()]
+            labels = [main.getLabel(), main.getLabel(), main.getLabel()]
+            translation += r.c3d
+            translation += [
+                InstruccionC3D(tmps[0], None, inc, None, None, TYPE.ASSIGN),
+                InstruccionC3D(labels[2], None, None, None, None, TYPE.LABEL),
+                InstruccionC3D(tmps[1], None, 'P', None, pos, TYPE.ADDITION),
+                InstruccionC3D(tmps[2], None, r.tmp.tmp, None, tmps[0], TYPE.ADDITION),
+                InstruccionC3D(tmps[3], None, 'heap', tmps[2], None, TYPE.ASSIGN),
+                InstruccionC3D('stack', tmps[1], tmps[3], None, None, TYPE.ASSIGN),
+                InstruccionC3D(labels[1], None, tmps[3], None, end, cmp),
                 InstruccionC3D(labels[0], None, None, None, None, TYPE.GOTO),
                 InstruccionC3D(labels[0], None, None, None, None, TYPE.LABEL),
             ]

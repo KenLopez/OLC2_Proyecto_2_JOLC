@@ -147,6 +147,7 @@ def t_error(t):
     print("Caracter no reconocido '%s'" % t.value[0])
 
 from classes.Aritmetica import Aritmetica
+from classes.Array import Array
 from classes.Global import Global
 from classes.Logica import Logica
 from classes.Print import Print
@@ -380,7 +381,11 @@ def p_declaracion_none(t):
 
 def p_funcion(t):
     'funcion        : FUNCTION ID params instrucciones'
-    t[0] = Declaracion(t[2], Funcion(t[3], t[4]), t.lexer.lineno, t.lexer.lexpos)
+    t[0] = Declaracion(t[2], Funcion(t[3], t[4], TYPE.NOTHING), t.lexer.lineno, t.lexer.lexpos)
+
+def p_funcion_2(t):
+    'funcion        : FUNCTION ID params DDOSPT typing instrucciones'
+    t[0] = Declaracion(t[2], Funcion(t[3], t[5], t[4]), t.lexer.lineno, t.lexer.lexpos) 
 
 # Parámetros
 
@@ -423,15 +428,24 @@ def p_param_type(t):
 
 def p_variable_id(t):
     'variable       : id'
-    t[0] = [Variable(t[1], t.lexer.lineno, t.lexer.lexpos), TYPE.ANY]
+    if(isinstance(t[1], ArrayAccess)):
+        t[0] = [t[1], TYPE.ANY]
+    else:
+        t[0] = [Variable(t[1], t.lexer.lineno, t.lexer.lexpos), TYPE.ANY]
 
 def p_variable_local(t):
     'variable       : LOCAL id'
-    t[0] = [Variable(t[2], t.lexer.lineno, t.lexer.lexpos), TYPE.LOCAL]
+    if(isinstance(t[2], ArrayAccess)):
+        t[0] = [t[2], TYPE.LOCAL]
+    else:
+        t[0] = [Variable(t[2], t.lexer.lineno, t.lexer.lexpos), TYPE.LOCAL]
 
 def p_variable_global(t):
     'variable       : GLOBAL id'
-    t[0] = [Variable(t[2], t.lexer.lineno, t.lexer.lexpos), TYPE.GLOBAL]
+    if(isinstance(t[2], ArrayAccess)):
+        t[0] = [t[2], TYPE.GLOBAL]
+    else:
+        t[0] = [Variable(t[2], t.lexer.lineno, t.lexer.lexpos), TYPE.GLOBAL]
 
 # Identificadores de asignación
 
@@ -593,7 +607,7 @@ def p_nativa(t):
 
 def p_array(t):
     'array_value    : ID array_access'
-    t[0] = ArrayAccess(t[1], t[2], t.lexer.lineno, t.lexer.lexpos)
+    t[0] = ArrayAccess(Variable(t[1], t.lexer.lineno, t.lexer.lexpos), t[2], t.lexer.lineno, t.lexer.lexpos)
 
 def p_array_accesses(t):
     'array_access   : array_access CORCHEA expl CORCHEC'
@@ -671,9 +685,12 @@ def p_typing_id(t):
     'typing         : ID'
     t[0] = Value(t[1], TYPE.TYPESTRUCT, t.lexer.lineno, t.lexer.lexpos)
 
-def p_typing_id(t):
+def p_typing_vector(t):
     'typing         : VECTOR LLAVEA typing LLAVEC'
-    t[0] = Value(t[3], TYPE.TYPELIST, t.lexer.lineno, t.lexer.lexpos)
+    if(isinstance(t[3].type, Array)):
+        t[0] = Value(TYPE.LIST, Array(0, TYPE.LIST, t[3].type), t.lexer.lineno, t.lexer.lexpos)
+    else:
+        t[0] = Value(TYPE.LIST, Array(0, t[3].val, None), t.lexer.lineno, t.lexer.lexpos)
 
 def p_sync(t):
     'sync           : PTCOMA'
