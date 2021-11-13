@@ -72,6 +72,8 @@ class Nativa:
             translation.type = TYPE.INT64
             if(main.functions.get(func)==None):
                 main.addStringLength()
+        else:
+            return translation
         tmp = [main.getTemp(), main.getTemp(), main.getTemp(), main.getTemp()]
         translation.c3d += val.c3d
         pos = ts.getLength()
