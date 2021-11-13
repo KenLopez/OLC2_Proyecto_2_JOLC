@@ -18,7 +18,7 @@ class Call:
         pos = ts.getLength()
         sim = main.getTemp()
         translation.c3d.append(InstruccionC3D(sim, None, 'P', None, pos, TYPE.ADDITION))
-        for i in range(len(self.args)):
+        for i in range(0,len(self.args)):
             res = self.args[i].translate(main, ts, scope)
             if(res.type != f.params[i].type.val):
                 return translation
