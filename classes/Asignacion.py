@@ -21,12 +21,11 @@ class Asignacion:
             return self.checkListTypes(arr1.dim, arr2.dim)
     
     def translate(self, main, ts, scope):
-        nscope = f'{scope}_ASSIGN'
         translation = []
         if(isinstance(self.id, ArrayAccess)):
-            s = self.id.getRef(main, ts, nscope)
+            s = self.id.getRef(main, ts, scope)
             translation += s.c3d
-            val = self.val.translate(main, ts, nscope)
+            val = self.val.translate(main, ts, scope)
             translation += val.c3d
             if(val.type == TYPE.BOOL):
                 ls = main.getLabel()
@@ -50,7 +49,7 @@ class Asignacion:
             s = ts.getSymbol(self.id.id, self.typeExp)
             if(s == None):
                 s = Symbol(0, None, self.type, None, None, None, None)
-            val = self.val.translate(main, ts, nscope)
+            val = self.val.translate(main, ts, scope)
             if(val.type == TYPE.LIST and self.type.val == TYPE.LIST):
                 check = self.checkListTypes(val.tmp, self.type.type)
                 if(not check):

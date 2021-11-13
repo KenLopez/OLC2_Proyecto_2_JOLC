@@ -300,7 +300,7 @@ def p_instruccion_control(t):
 
 def p_instruccion_return_value(t):
     'instruccion    : RETURN expl sync'
-    t[0] = Control(t[1], TYPE.RETURN, t.lexer.lineno, t.lexer.lexpos)
+    t[0] = Control(t[2], TYPE.RETURN, t.lexer.lineno, t.lexer.lexpos)
 
 def p_instruccion_call(t):
     'instruccion    : call sync'
@@ -381,7 +381,7 @@ def p_declaracion_none(t):
 
 def p_funcion(t):
     'funcion        : FUNCTION ID params instrucciones'
-    t[0] = Declaracion(t[2], Funcion(t[3], t[4], TYPE.NOTHING), t.lexer.lineno, t.lexer.lexpos)
+    t[0] = Declaracion(t[2], Funcion(t[3], t[4], Value(TYPE.NOTHING, TYPE.TYPE, t.lexer.lineno, t.lexer.lexpos)), t.lexer.lineno, t.lexer.lexpos)
 
 def p_funcion_2(t):
     'funcion        : FUNCTION ID params DDOSPT typing instrucciones'
@@ -401,7 +401,7 @@ def p_params_none(t):
 
 def p_call(t):
     'call           : ID args'
-    Call(t[1], t[2], t.lexer.lineno, t.lexer.lexpos)
+    t[0] = Call(t[1], t[2], t.lexer.lineno, t.lexer.lexpos)
 
 # Lista de parámetros
 

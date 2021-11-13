@@ -78,6 +78,11 @@ class Aritmetica:
                             break
                     else:
                         main.imports.append("math")
+                if(der.tmp == 0):
+                    ntmp = main.getTemp()
+                    translation.c3d.append(InstruccionC3D(ntmp, None, der.tmp, None, None, TYPE.ASSIGN))
+                    der.tmp = ntmp
+                    ins = InstruccionC3D(translation.tmp, None, izq.tmp, None, der.tmp, self.type)
                 lv = main.getLabel()
                 ls = main.getLabel()
                 translation.c3d += [

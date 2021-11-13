@@ -6,6 +6,7 @@ from classes.Symbol import Symbol
 from classes.SymbolTable import SymbolTable
 from classes.Tipo import TYPE
 from classes.Funcion import Funcion
+from classes.ValueC3D import ValueC3D
 
 class Global:
     def __init__(self):
@@ -30,6 +31,18 @@ class Global:
         newTemp = f'T{self.temp}'
         self.temp = self.temp + 1
         return newTemp
+
+    def getFunctions(self):
+        for instruccion in self.instrucciones:
+            if(isinstance(instruccion, Declaracion)):
+                if(isinstance(instruccion.val, Funcion)):
+                    nFunc = instruccion.val.translate(self, self.symbols, instruccion.id)
+                    self.functions[f'{instruccion.id}_'] = FuncionC3D(
+                        f'{instruccion.id}_',
+                        nFunc
+                    )
+                    self.definitions[f'{instruccion.id}'] = instruccion.val
+                
     
     def getSymbols(self):
         for instruccion in self.instrucciones:
@@ -46,18 +59,17 @@ class Global:
                             None
                         )
                     )
-            elif(isinstance(instruccion, Declaracion)):
-                if(isinstance(instruccion.val, Funcion)):
-                    self.symbols.newSymbol(
-                        Symbol(
-                            0, 
-                        )
-                    )
     
     def translate(self):
         self.getSymbols()
+        self.getFunctions()
         for instruccion in self.instrucciones:
-            self.functions["main"].c3d += instruccion.translate(self, self.symbols, 'GLOBAL')
+            if(not isinstance(instruccion, Declaracion)):
+                res = instruccion.translate(self, self.symbols, 'GLOBAL')
+                if(isinstance(res, ValueC3D)):
+                    self.functions["main"].c3d += res.c3d
+                else:
+                    self.functions["main"].c3d += res
         self.buildTranslation()
     
     def buildTranslation(self):
@@ -82,8 +94,8 @@ var heap[30101999] float64;
 
         for key in self.functions:
             if(key != 'main'): 
-                self.output += self.functions[key].translate()
-        self.output += '\n' + self.functions['main'].translate()
+                self.output += self.functions[key].translate() + '\n'
+        self.output += self.functions['main'].translate()
 
 
     

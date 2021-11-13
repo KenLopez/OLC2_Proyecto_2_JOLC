@@ -56,8 +56,8 @@ class For:
             end = r.tmp[1]
             cmp = TYPE.GREATER
         elif(r.type == TYPE.LIST):
-            t = r.tmp.type
-            e = r.tmp.dim
+            t = r.tmp.dim.type
+            e = r.tmp.dim.dim
             inc = 0
             end = -1
             cmp = TYPE.EQUAL
@@ -76,14 +76,17 @@ class For:
             res = instruction.translate(main, self.ts, nscope)
             if(isinstance(res, ValueC3D)):
                 insc3d += res.c3d
-                for control in res.tmp:
-                    if(control.type == TYPE.CONTINUE):
-                        ll.append(control.label)
-                    elif(control.type == TYPE.BREAK):
-                        if(str(scope).__contains__('FOR') or str(scope).__contains__('WHILE')):
+                if(res.type == TYPE.CONTROL):
+                    for control in res.tmp:
+                        if(control.type == TYPE.CONTINUE):
+                            ll.append(control.label)
+                        elif(control.type == TYPE.BREAK):
+                            if(str(scope).__contains__('FOR') or str(scope).__contains__('WHILE')):
+                                controls.append(control)
+                            else:
+                                ls.append(control.label)
+                        elif(control.type == TYPE.RETURN):
                             controls.append(control)
-                        else:
-                            ls.append(control.label)
             else:
                 insc3d += res
         if(r.type==TYPE.STRING):

@@ -66,7 +66,8 @@ class If:
             for instruction in self.instructions[i]:
                 res = instruction.translate(main, self.ts, nscope)
                 if(isinstance(res, ValueC3D)):
-                    controls += res.tmp
+                    if(res.type == TYPE.CONTROL):
+                        controls += res.tmp
                     translation += res.c3d
                 else:
                     translation += res
@@ -81,7 +82,8 @@ class If:
             for instruction in self.elseinstructions:
                 res = instruction.translate(main, self.ts, nscope)
                 if(isinstance(res, ValueC3D)):
-                    controls += res.tmp
+                    if(res.type == TYPE.CONTROL):
+                        controls += res.tmp
                     translation += res.c3d
                 else:
                     translation += res
