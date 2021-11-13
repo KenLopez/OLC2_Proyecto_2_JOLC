@@ -11,9 +11,25 @@ class Funcion:
         self.params = params
         self.instructions = instructions
         self.type = type
-        self.ts = None
+        self.ts = SymbolTable(None)
     
     def getSymbols(self, scope):
+        for param in self.params:
+            if(param.type.val == TYPE.LIST):
+                ext = param.type.type
+            else:
+                ext = None
+            self.ts.newSymbol(
+                Symbol(
+                    len(self.ts.symbols), 
+                    param.id, 
+                    param.type.val,
+                    scope,
+                    0,
+                    0,
+                    ext
+                )
+            )
         pos = len(self.ts.symbols)
         for instruccion in self.instructions:
             if(isinstance(instruccion, Asignacion)):
@@ -47,26 +63,8 @@ class Funcion:
         )
     
     def translate(self, main, ts, id):
-        self.ts = SymbolTable(ts)
         scope = f'FUNCTION_{id}'
         translation = []
-        for param in self.params:
-            if(param.type.val == TYPE.LIST):
-                ext = param.type.type
-            else:
-                ext = None
-            self.ts.newSymbol(
-                Symbol(
-                    len(self.ts.symbols), 
-                    param.id, 
-                    param.type.val,
-                    scope,
-                    0,
-                    0,
-                    ext
-                )
-            )
-        self.getSymbols(scope)
         ls = []
         for instruction in self.instructions:
             res = instruction.translate(main, self.ts, scope)

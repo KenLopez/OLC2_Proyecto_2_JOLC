@@ -36,12 +36,13 @@ class Global:
         for instruccion in self.instrucciones:
             if(isinstance(instruccion, Declaracion)):
                 if(isinstance(instruccion.val, Funcion)):
+                    self.definitions[f'{instruccion.id}'] = instruccion.val
+                    instruccion.val.getSymbols(scope = f'FUNCTION_{instruccion.id}')
                     nFunc = instruccion.val.translate(self, self.symbols, instruccion.id)
                     self.functions[f'{instruccion.id}_'] = FuncionC3D(
                         f'{instruccion.id}_',
                         nFunc
                     )
-                    self.definitions[f'{instruccion.id}'] = instruccion.val
                 
     
     def getSymbols(self):
